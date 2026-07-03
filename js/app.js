@@ -1,7 +1,8 @@
 import { initState, state, setTheme, subscribe } from "./state.js";
 import { route, notFound, startRouter } from "./router.js";
-import { initNav, setActiveNav, setCompanyName } from "./components/nav.js";
+import { initNav, setActiveNav, setCompanyName, refreshReorderBadge } from "./components/nav.js";
 import { icon } from "./utils/icons.js";
+import { showToast } from "./components/toast.js";
 
 const viewRoot = document.getElementById("view-root");
 
@@ -10,6 +11,7 @@ async function mount(loader, params, query) {
   const mod = await loader();
   viewRoot.scrollTop = 0;
   await mod.render(viewRoot, { params, query });
+  refreshReorderBadge();
 }
 
 route("/", (ctx) => {
@@ -43,6 +45,10 @@ route("/import-export", (ctx) => {
 route("/settings", (ctx) => {
   setActiveNav("/settings");
   return mount(() => import("./views/settings.js"), ctx.params, ctx.query);
+});
+route("/help", (ctx) => {
+  setActiveNav("/help");
+  return mount(() => import("./views/help.js"), ctx.params, ctx.query);
 });
 notFound(() => {
   viewRoot.innerHTML = `<div class="empty-state"><div class="empty-title">Página no encontrada</div></div>`;
@@ -81,7 +87,28 @@ async function boot() {
   startRouter();
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch((err) => console.warn("SW registration failed", err));
+    navigator.serviceWorker
+      .register("./sw.js")
+      .then((reg) => {
+        // Only announce updates when the page was already SW-controlled before
+        // this install; otherwise the first-ever install (skipWaiting + claim)
+        // would falsely look like an update.
+        const hadController = !!navigator.serviceWorker.controller;
+        reg.addEventListener("updatefound", () => {
+          const incoming = reg.installing;
+          if (!incoming) return;
+          incoming.addEventListener("statechange", () => {
+            if (incoming.state === "activated" && hadController) {
+              showToast("Nueva versión de la app disponible", {
+                type: "success",
+                actionLabel: "Recargar",
+                onAction: () => location.reload(),
+              });
+            }
+          });
+        });
+      })
+      .catch((err) => console.warn("SW registration failed", err));
   }
 }
 

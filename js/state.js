@@ -1,6 +1,8 @@
 import * as db from "./db.js";
 import { DEFAULT_EQUIPMENT, DEFAULT_CATEGORIES, SAMPLE_PARTS } from "./seed.js";
 
+export const APP_VERSION = "2.0";
+
 export const state = {
   companyName: "Spare Part Inventory",
   equipmentList: [...DEFAULT_EQUIPMENT],

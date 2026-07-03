@@ -89,6 +89,7 @@ function normalizePart(p) {
     storageLocationId: (p.storageLocationId || "").trim(),
     category: (p.category || "").trim(),
     notes: (p.notes || "").trim(),
+    photo: typeof p.photo === "string" ? p.photo : "",
   };
 }
 
@@ -121,6 +122,40 @@ export async function updatePart(id, partData) {
     }
     await reqToPromise(partsStore.put(updated));
     return updated;
+  });
+}
+
+// Atomic +/- stock adjustment with automatic history entry. Clamps at 0.
+export function adjustQty(id, delta, note = "Ajuste rápido") {
+  return tx(["parts", "history"], "readwrite", async (stores) => {
+    const [partsStore, historyStore] = stores;
+    const part = await reqToPromise(partsStore.get(Number(id)));
+    if (!part) throw new Error("Repuesto no encontrado");
+    const newQty = Math.max(0, Number(part.qty) + delta);
+    if (newQty === part.qty) return part;
+    historyStore.add({
+      partId: part.id,
+      timestamp: Date.now(),
+      oldQty: part.qty,
+      newQty,
+      delta: newQty - part.qty,
+      note,
+    });
+    const updated = { ...part, qty: newQty, updatedAt: Date.now() };
+    await reqToPromise(partsStore.put(updated));
+    return updated;
+  });
+}
+
+// Re-inserts a previously deleted part (same id) with its history — powers "undo delete".
+export function restorePart(part, historyRows = []) {
+  return tx(["parts", "history"], "readwrite", async (stores) => {
+    const [partsStore, historyStore] = stores;
+    await reqToPromise(partsStore.add(part));
+    for (const h of historyRows) {
+      const { id, ...rest } = h;
+      historyStore.add(rest);
+    }
   });
 }
 
@@ -191,6 +226,12 @@ export function countParts() {
 
 export function addHistory(entry) {
   return tx("history", "readwrite", (store) => reqToPromise(store.add(entry)));
+}
+
+export function getRecentHistory(limit = 10) {
+  return tx("history", "readonly", (store) => reqToPromise(store.getAll())).then((rows) =>
+    rows.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit)
+  );
 }
 
 export function getHistoryForPart(partId) {

@@ -1,5 +1,6 @@
 import { icon } from "../utils/icons.js";
 import { navigate } from "../router.js";
+import { getAllParts } from "../db.js";
 
 export const NAV_ITEMS = [
   { id: "dashboard", label: "Inicio", path: "/", iconName: "home" },
@@ -8,6 +9,7 @@ export const NAV_ITEMS = [
   { id: "reorder", label: "Reorden", path: "/reorder", iconName: "reorder" },
   { id: "import-export", label: "Importar", path: "/import-export", iconName: "import" },
   { id: "settings", label: "Ajustes", path: "/settings", iconName: "settings" },
+  { id: "help", label: "Ayuda", path: "/help", iconName: "help" },
 ];
 
 const MOBILE_PRIMARY = NAV_ITEMS.slice(0, 4);
@@ -94,4 +96,27 @@ export function setActiveNav(path) {
 
 export function setCompanyName(name) {
   if (topbarCompanyEl) topbarCompanyEl.textContent = name || "Spare Part Inventory";
+}
+
+export function updateReorderBadge(count) {
+  document.querySelectorAll('[data-nav-id="reorder"]').forEach((el) => {
+    let badge = el.querySelector(".nav-badge");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "nav-badge";
+      el.appendChild(badge);
+    }
+    badge.textContent = count > 99 ? "99+" : String(count);
+    badge.hidden = count === 0;
+  });
+}
+
+export async function refreshReorderBadge() {
+  try {
+    const parts = await getAllParts();
+    const count = parts.filter((p) => Number(p.qty) <= Number(p.reorderQty)).length;
+    updateReorderBadge(count);
+  } catch {
+    // Badge is decorative; never let it break navigation.
+  }
 }

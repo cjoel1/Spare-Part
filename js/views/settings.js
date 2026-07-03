@@ -1,5 +1,5 @@
 import * as db from "../db.js";
-import { state, setCompanyName, setEquipmentList, setCategories, setTheme, resetAllData } from "../state.js";
+import { state, APP_VERSION, setCompanyName, setEquipmentList, setCategories, setTheme, resetAllData } from "../state.js";
 import { icon } from "../utils/icons.js";
 import { escapeHtml } from "../utils/helpers.js";
 import { showToast } from "../components/toast.js";
@@ -106,7 +106,11 @@ export async function render(root) {
       </div>
     </div>
 
-    <button class="btn btn-primary btn-block" id="btn-save-general" style="margin-bottom:24px;">${icon("check", { size: 16 })} Guardar cambios</button>
+    <button class="btn btn-primary btn-block" id="btn-save-general">${icon("check", { size: 16 })} Guardar cambios</button>
+
+    <div class="text-sm faint" style="text-align:center;margin:18px 0 24px;">
+      Spare Part Inventory v${APP_VERSION} · <a href="#/help">Guía de uso</a>
+    </div>
   `;
 
   root.querySelector("#theme-select").addEventListener("change", async (e) => {

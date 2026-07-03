@@ -13,6 +13,11 @@ Service Worker.
 - Lista de reorden con generación de orden de compra imprimible.
 - Importación desde Excel (.xlsx) y JSON, exportación a Excel/JSON/PDF.
 - Ajustes: nombre de instalación, equipos, categorías, tema claro/oscuro, reset.
+- Fotos de repuestos (cámara/galería), guardadas localmente.
+- Ajuste rápido de stock (−/+) con historial automático y deshacer al eliminar.
+- Badge de reorden en la navegación, orden y vista tabla en escritorio.
+- Guía de uso completa dentro de la app (pestaña **Ayuda**, imprimible) y
+  [MANUAL.md](MANUAL.md) en este repositorio.
 - Impresión y PDF siempre como overlay dentro de la app (sin `window.open`,
   compatible con modo PWA standalone de iOS).
 

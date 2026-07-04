@@ -4,6 +4,8 @@ import { icon } from "../utils/icons.js";
 import { escapeHtml } from "../utils/helpers.js";
 import { navigate } from "../router.js";
 import { openPrintOverlay } from "../utils/print.js";
+import { printLabels } from "../utils/qrlabels.js";
+import { showToast } from "../components/toast.js";
 
 export async function render(root, { query }) {
   const parts = await db.getAllParts();
@@ -15,6 +17,7 @@ export async function render(root, { query }) {
         ${state.equipmentList.map((eq) => `<option value="${escapeHtml(eq)}" ${eq === selected ? "selected" : ""}>${escapeHtml(eq)}</option>`).join("")}
       </select>
       <button class="btn" id="btn-print">${icon("print", { size: 16 })} Imprimir</button>
+      <button class="btn" id="btn-labels">${icon("qr", { size: 16 })} Etiquetas</button>
     </div>
     <div class="text-sm muted mb-16" id="eq-count"></div>
     <div class="part-list" id="eq-parts-list"></div>
@@ -102,6 +105,17 @@ export async function render(root, { query }) {
         </table>
       `,
     });
+  });
+
+  root.querySelector("#btn-labels").addEventListener("click", async () => {
+    const list = parts
+      .filter((p) => (p.usedIn || []).includes(selected))
+      .sort((a, b) => a.partNumber.localeCompare(b.partNumber));
+    if (!list.length) {
+      showToast("No hay repuestos para etiquetar", { type: "error" });
+      return;
+    }
+    await printLabels(list, { title: `Etiquetas QR — ${selected}` });
   });
 
   renderForEquipment(selected);

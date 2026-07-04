@@ -1,6 +1,6 @@
 // Spare Part Inventory — Service Worker
 // Cache-first, fully offline. Bump CACHE_VERSION on any asset change to force refresh.
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const CACHE_NAME = `spareparts-${CACHE_VERSION}`;
 
 const ASSETS = [
@@ -13,14 +13,17 @@ const ASSETS = [
   "./js/db.js",
   "./js/state.js",
   "./js/license.js",
+  "./js/protection.js",
   "./js/seed.js",
   "./js/components/activation.js",
   "./js/components/modal.js",
   "./js/components/nav.js",
+  "./js/components/scanner.js",
   "./js/components/toast.js",
   "./js/utils/helpers.js",
   "./js/utils/icons.js",
   "./js/utils/print.js",
+  "./js/utils/qrlabels.js",
   "./js/views/byEquipment.js",
   "./js/views/dashboard.js",
   "./js/views/help.js",
@@ -30,6 +33,8 @@ const ASSETS = [
   "./js/views/reorder.js",
   "./js/views/settings.js",
   "./vendor/xlsx.full.min.js",
+  "./vendor/jsQR.js",
+  "./vendor/qrcode.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",

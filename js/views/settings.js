@@ -7,6 +7,9 @@ import { confirmModal } from "../components/modal.js";
 import { setCompanyName as setTopbarCompanyName } from "../components/nav.js";
 import { getLicenseStatus } from "../license.js";
 import { showActivationGate } from "../components/activation.js";
+import { runBackup, getLastBackup, getErrorLog, clearErrorLog } from "../protection.js";
+import { formatDate } from "../utils/helpers.js";
+import { openModal } from "../components/modal.js";
 
 async function renameEquipmentEverywhere(oldName, newName) {
   const parts = await db.getAllParts();
@@ -66,12 +69,19 @@ export async function render(root) {
   const license = await getLicenseStatus();
   const licenseLine =
     license.state === "active" || license.state === "expired"
-      ? `Licenciado a: <strong>${escapeHtml(license.payload.c || "")}</strong>${license.payload.p ? " · " + escapeHtml(license.payload.p) : ""} — ${
+      ? `${license.payload.demo ? '<span class="pill pill-neutral" style="margin-right:6px;">DEMO</span>' : ""}Licenciado a: <strong>${escapeHtml(license.payload.c || "")}</strong>${license.payload.p ? " · " + escapeHtml(license.payload.p) : ""} — ${
           license.payload.exp
             ? (license.state === "expired" ? `<span style="color:var(--danger);">venció el ${escapeHtml(license.payload.exp)}</span>` : `vence el ${escapeHtml(license.payload.exp)}`)
             : "licencia perpetua"
         }`
       : "Sin licencia activa";
+
+  const lastBackup = await getLastBackup();
+  const lastBackupLine = lastBackup
+    ? `Último respaldo: ${formatDate(lastBackup)}`
+    : "Aún no has respaldado tu inventario";
+  const errorLog = (await getErrorLog()) || [];
+  const errorCount = errorLog.length;
 
   root.innerHTML = `
     <div class="section-title" style="margin-top:0;">General</div>
@@ -120,6 +130,20 @@ export async function render(root) {
 
     <div class="section-title">Datos</div>
     <div class="card card-pad mb-16">
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Respaldar ahora</div>
+          <div class="settings-row-sub">${lastBackupLine}</div>
+        </div>
+        <button class="btn" id="btn-backup">${icon("download", { size: 15 })} Respaldar</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Diagnóstico</div>
+          <div class="settings-row-sub">${errorCount ? `${errorCount} evento(s) registrados en este dispositivo` : "Sin errores registrados"}</div>
+        </div>
+        <button class="btn btn-sm" id="btn-errorlog">Ver registro</button>
+      </div>
       <div class="settings-row">
         <div>
           <div class="settings-row-label">Restablecer todos los datos</div>
@@ -186,6 +210,46 @@ export async function render(root) {
       status: license,
       allowClose: true,
       onActivated: () => location.reload(),
+    });
+  });
+
+  root.querySelector("#btn-backup").addEventListener("click", async () => {
+    try {
+      await runBackup();
+      showToast("Respaldo descargado", { type: "success" });
+      render(root);
+    } catch (err) {
+      showToast("Error al respaldar: " + err.message, { type: "error" });
+    }
+  });
+
+  root.querySelector("#btn-errorlog").addEventListener("click", async () => {
+    const freshLog = (await getErrorLog()) || [];
+    const body = freshLog.length
+      ? `<div class="flex-col gap-8">${freshLog
+          .map(
+            (e) => `<div class="history-item" style="flex-direction:column;align-items:flex-start;gap:2px;">
+              <span class="text-sm faint">${formatDate(e.t)} · ${escapeHtml(e.kind)}</span>
+              <span class="text-sm">${escapeHtml(e.message)}</span>
+              ${e.extra ? `<span class="text-sm faint">${escapeHtml(e.extra)}</span>` : ""}
+            </div>`
+          )
+          .join("")}</div>`
+      : `<p class="muted">No hay errores registrados. 🎉</p>`;
+    openModal({
+      title: "Registro de diagnóstico",
+      bodyHtml: body,
+      footerHtml: freshLog.length ? `<button class="btn" data-clear-log>Limpiar registro</button>` : "",
+      onMount: (modalEl, close) => {
+        const clearBtn = modalEl.querySelector("[data-clear-log]");
+        if (clearBtn)
+          clearBtn.addEventListener("click", async () => {
+            await clearErrorLog();
+            close();
+            showToast("Registro limpiado", { type: "success" });
+            render(root);
+          });
+      },
     });
   });
 

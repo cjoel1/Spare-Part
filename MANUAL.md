@@ -58,6 +58,18 @@ funciona sin conexión.
 - **Necesitan reorden:** acceso rápido a los repuestos bajo mínimo.
 - **Actividad reciente:** últimos movimientos de stock con fecha y nota.
 
+## 4b. Escanear códigos QR
+
+El botón azul flotante (esquina inferior derecha) abre la cámara para leer los
+códigos QR de las etiquetas de tus repuestos.
+
+- **Imprimir etiquetas:** en *Importar → Etiquetas QR* imprimes las de todo el
+  inventario; también hay botón de etiqueta en el detalle de cada repuesto y en
+  la vista Por Equipo. Pega cada etiqueta en su estante.
+- **Escanear:** apunta al QR y la app abre ese repuesto con botones **−/+** para
+  ajustar el stock al instante.
+- La primera vez el teléfono pedirá permiso de cámara; acéptalo.
+
 ## 5. Pantalla: Repuestos
 
 - **Buscar** por número de parte, descripción o fabricante.

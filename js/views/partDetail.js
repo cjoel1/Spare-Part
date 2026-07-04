@@ -5,6 +5,7 @@ import { escapeHtml, formatDate, fileToResizedDataURL } from "../utils/helpers.j
 import { navigate } from "../router.js";
 import { showToast } from "../components/toast.js";
 import { confirmModal } from "../components/modal.js";
+import { printLabels } from "../utils/qrlabels.js";
 
 export async function render(root, { params, query }) {
   const isNew = !params.id;
@@ -37,6 +38,7 @@ export async function render(root, { params, query }) {
     <div class="flex items-center gap-8" style="margin-bottom:14px;">
       <button class="btn btn-ghost btn-sm" id="btn-back">${icon("chevronRight", { size: 15, className: "rotate-180" })} Volver</button>
       ${!isNew ? `<button class="btn btn-ghost btn-sm" id="btn-duplicate">${icon("copy", { size: 15 })} Duplicar</button>` : ""}
+      ${!isNew ? `<button class="btn btn-ghost btn-sm" id="btn-label">${icon("qr", { size: 15 })} Etiqueta</button>` : ""}
       ${copyId ? `<span class="pill pill-neutral">Copia — asigna un nuevo N° de parte</span>` : ""}
     </div>
 
@@ -168,6 +170,11 @@ export async function render(root, { params, query }) {
   `;
 
   root.querySelector("#btn-back").addEventListener("click", () => navigate("/parts"));
+
+  const labelBtn = root.querySelector("#btn-label");
+  if (labelBtn) {
+    labelBtn.addEventListener("click", () => printLabels([part], { title: `Etiqueta — ${part.partNumber}` }));
+  }
 
   const duplicateBtn = root.querySelector("#btn-duplicate");
   if (duplicateBtn) {

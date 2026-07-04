@@ -671,6 +671,57 @@ table.data-table tr:hover td { background: var(--surface-2); }
   font-size: 12px;
 }
 
+/* ---------- Activation gate ---------- */
+.activation-gate {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.activation-card {
+  width: 100%; max-width: 420px;
+  padding: 30px 26px;
+  position: relative;
+  text-align: center;
+}
+.activation-card h2 { font-size: 19px; margin-bottom: 8px; }
+.activation-sub { font-size: 13.5px; line-height: 1.55; margin-bottom: 16px; }
+.activation-logo {
+  width: 60px; height: 60px;
+  margin: 0 auto 14px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  display: flex; align-items: center; justify-content: center;
+}
+.activation-card textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  word-break: break-all;
+  margin-bottom: 12px;
+}
+.activation-error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.activation-close { position: absolute; top: 10px; right: 10px; }
+
+.readonly-banner {
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
 /* ---------- View toggle (cards/table, desktop only) ---------- */
 .view-toggle { display: none; }
 @media (min-width: 900px) { .view-toggle { display: inline-flex; } }

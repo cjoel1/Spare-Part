@@ -176,3 +176,9 @@ imprimen o guardan como PDF.
 
 **¿Cómo se actualiza la app?**
 Cuando hay versión nueva aparece un aviso "Recargar". Tus datos no se tocan.
+
+**¿Qué es el código de activación?**
+Es la licencia de uso de la app; normalmente lo ingresa el proveedor durante la
+instalación. En Ajustes → Licencia puedes ver a nombre de quién está y su
+vigencia. Si vence, la app entra en modo consulta (puedes ver todo pero no
+editar) hasta ingresar un código renovado — tus datos nunca se borran.

@@ -205,14 +205,19 @@ export async function render(root, { query }) {
       e.stopPropagation();
       const id = Number(adjBtn.dataset.id);
       const delta = Number(adjBtn.dataset.adj);
-      const updated = await db.adjustQty(id, delta);
-      const local = parts.find((p) => p.id === id);
-      if (local && updated) {
-        local.qty = updated.qty;
-        local.updatedAt = updated.updatedAt;
+      try {
+        const updated = await db.adjustQty(id, delta);
+        const local = parts.find((p) => p.id === id);
+        if (local && updated) {
+          local.qty = updated.qty;
+          local.updatedAt = updated.updatedAt;
+        }
+        renderList();
+        refreshReorderBadge();
+      } catch (err) {
+        const { showToast } = await import("../components/toast.js");
+        showToast(err.message, { type: "error" });
       }
-      renderList();
-      refreshReorderBadge();
       return;
     }
     const rowEl = e.target.closest("[data-id]");

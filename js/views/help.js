@@ -174,6 +174,7 @@ function guideSections() {
         <p><strong>Eliminé un repuesto por error.</strong> Toca "Deshacer" en el aviso inferior antes de que desaparezca. Si ya pasó, recupéralo importando tu último respaldo JSON (modo combinar).</p>
         <p><strong>¿Por qué la impresión abre dentro de la app?</strong> Es a propósito: en modo app instalada (iOS) las ventanas emergentes no funcionan, así que los documentos se muestran dentro y de ahí se imprimen o guardan como PDF.</p>
         <p><strong>¿Cómo se actualiza la app?</strong> Cuando hay una versión nueva, aparece un aviso "Recargar". Tus datos no se tocan al actualizar.</p>
+        <p><strong>¿Qué es el código de activación?</strong> Es la licencia de uso de la app; normalmente lo ingresa el proveedor durante la instalación. En Ajustes → Licencia puedes ver a nombre de quién está y su vigencia. Si vence, la app entra en modo consulta (puedes ver todo pero no editar) hasta ingresar un código renovado — tus datos nunca se borran.</p>
       `,
     },
   ];

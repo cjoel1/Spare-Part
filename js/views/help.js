@@ -65,6 +65,17 @@ function guideSections() {
       `,
     },
     {
+      title: "Escanear códigos QR",
+      html: `
+        <p>El botón azul flotante con el ícono de escaneo (esquina inferior derecha) abre la cámara para leer los códigos QR de las etiquetas de tus repuestos.</p>
+        <ul>
+          <li><strong>Imprimir etiquetas:</strong> en <em>Importar</em> → "Etiquetas QR" imprimes las de todo el inventario; también hay botón de etiqueta en el detalle de cada repuesto y en la vista Por Equipo. Pega cada etiqueta en su estante o gaveta.</li>
+          <li><strong>Escanear:</strong> apunta la cámara al QR y la app abre al instante ese repuesto, con botones <strong>−</strong> y <strong>+</strong> para ajustar el stock sin escribir nada.</li>
+          <li>La primera vez el teléfono pedirá permiso de cámara; acéptalo.</li>
+        </ul>
+      `,
+    },
+    {
       title: "Pantalla: Repuestos",
       html: `
         <p>La lista completa del inventario.</p>
@@ -175,6 +186,7 @@ function guideSections() {
         <p><strong>¿Por qué la impresión abre dentro de la app?</strong> Es a propósito: en modo app instalada (iOS) las ventanas emergentes no funcionan, así que los documentos se muestran dentro y de ahí se imprimen o guardan como PDF.</p>
         <p><strong>¿Cómo se actualiza la app?</strong> Cuando hay una versión nueva, aparece un aviso "Recargar". Tus datos no se tocan al actualizar.</p>
         <p><strong>¿Qué es el código de activación?</strong> Es la licencia de uso de la app; normalmente lo ingresa el proveedor durante la instalación. En Ajustes → Licencia puedes ver a nombre de quién está y su vigencia. Si vence, la app entra en modo consulta (puedes ver todo pero no editar) hasta ingresar un código renovado — tus datos nunca se borran.</p>
+        <p><strong>¿Cómo respaldo mi inventario?</strong> En Ajustes → Datos → "Respaldar ahora" (o exportando JSON en Importar). La app te recuerda respaldar si pasan más de 7 días. Guarda ese archivo en lugar seguro: es tu seguro contra perder datos si cambias de teléfono o se borra el navegador.</p>
       `,
     },
   ];

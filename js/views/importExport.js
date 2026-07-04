@@ -2,6 +2,8 @@ import * as db from "../db.js";
 import { state, needsReorder } from "../state.js";
 import { icon } from "../utils/icons.js";
 import { escapeHtml, downloadJSON, downloadBlob } from "../utils/helpers.js";
+import { markBackupDone } from "../protection.js";
+import { printLabels } from "../utils/qrlabels.js";
 import { showToast } from "../components/toast.js";
 import { openPrintOverlay } from "../utils/print.js";
 import { confirmModal } from "../components/modal.js";
@@ -100,6 +102,11 @@ export async function render(root) {
         <div class="action-card-title">Exportar PDF</div>
         <div class="action-card-sub">Inventario completo imprimible</div>
       </button>
+      <button class="action-card" id="print-labels">
+        ${icon("qr", { size: 22 })}
+        <div class="action-card-title">Etiquetas QR</div>
+        <div class="action-card-sub">Imprimir etiquetas de todos los repuestos</div>
+      </button>
     </div>
   `;
 
@@ -183,6 +190,7 @@ export async function render(root) {
   root.querySelector("#export-json").addEventListener("click", async () => {
     const data = await db.exportAllData();
     downloadJSON(data, `spareparts-backup-${Date.now()}.json`);
+    await markBackupDone();
     showToast("JSON exportado", { type: "success" });
   });
 
@@ -191,6 +199,7 @@ export async function render(root) {
     const filename = `spareparts-backup-${Date.now()}.json`;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const file = new File([blob], filename, { type: "application/json" });
+    await markBackupDone();
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "Inventario de repuestos" });
@@ -201,6 +210,15 @@ export async function render(root) {
     }
     downloadBlob(blob, filename);
     showToast("Compartir no disponible: JSON descargado", { type: "default" });
+  });
+
+  root.querySelector("#print-labels").addEventListener("click", async () => {
+    const parts = (await db.getAllParts()).sort((a, b) => a.partNumber.localeCompare(b.partNumber));
+    if (!parts.length) {
+      showToast("No hay repuestos para etiquetar", { type: "error" });
+      return;
+    }
+    await printLabels(parts, { title: "Etiquetas QR — Inventario completo" });
   });
 
   root.querySelector("#export-pdf").addEventListener("click", async () => {

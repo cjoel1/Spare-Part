@@ -78,6 +78,27 @@ export function fileToResizedDataURL(file, maxDim = 900, quality = 0.78) {
   });
 }
 
+// Lazily loads a classic (non-module) vendored script once; resolves when ready.
+const loadedScripts = new Map();
+export function loadScript(src) {
+  if (!loadedScripts.has(src)) {
+    loadedScripts.set(
+      src,
+      new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => {
+          loadedScripts.delete(src);
+          reject(new Error("No se pudo cargar " + src));
+        };
+        document.head.appendChild(s);
+      })
+    );
+  }
+  return loadedScripts.get(src);
+}
+
 export function uniqueId(prefix = "id") {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }

@@ -6,6 +6,8 @@ import { showToast } from "./components/toast.js";
 import { getLicenseStatus } from "./license.js";
 import { showActivationGate } from "./components/activation.js";
 import { setWritesLocked } from "./db.js";
+import { openScanner } from "./components/scanner.js";
+import { initDataProtection } from "./protection.js";
 
 const viewRoot = document.getElementById("view-root");
 
@@ -77,6 +79,13 @@ function wireTopbar() {
   });
 }
 
+function wireScanFab() {
+  const fab = document.getElementById("fab-scan");
+  fab.innerHTML = icon("scan", { size: 26 });
+  fab.hidden = false;
+  fab.addEventListener("click", () => openScanner());
+}
+
 async function boot() {
   await initState();
   initNav();
@@ -88,6 +97,14 @@ async function boot() {
     updateThemeButton();
   });
 
+  // Runs once the license check clears — starts routing and enables the
+  // features that only make sense inside an unlocked app.
+  const startApp = () => {
+    startRouter();
+    wireScanFab();
+    initDataProtection();
+  };
+
   // License gate: the router (and therefore the whole app) only starts once
   // there is a valid activation, or the user opts into read-only mode.
   const license = await getLicenseStatus();
@@ -96,7 +113,7 @@ async function boot() {
     if (license.daysLeft !== null && license.daysLeft <= 30) {
       showToast(`Tu licencia vence en ${license.daysLeft} día${license.daysLeft === 1 ? "" : "s"}`, { type: "error", duration: 6000 });
     }
-    startRouter();
+    startApp();
   } else if (license.state === "expired") {
     showActivationGate({
       status: license,
@@ -107,7 +124,7 @@ async function boot() {
         banner.className = "readonly-banner";
         banner.textContent = "Modo consulta — la licencia expiró; la edición está bloqueada";
         document.querySelector(".topbar").after(banner);
-        startRouter();
+        startApp();
       },
     });
   } else {

@@ -30,7 +30,22 @@ function openDB() {
   return dbPromise;
 }
 
+// When the license is expired the app runs in read-only mode: inventory writes
+// (parts/history) are blocked, but settings (kv) stay writable so theme and a
+// new activation code can still be saved.
+let writesLocked = false;
+export function setWritesLocked(locked) {
+  writesLocked = locked;
+}
+const LOCKED_STORES = ["parts", "history"];
+
 function tx(storeNames, mode, fn) {
+  if (mode === "readwrite" && writesLocked) {
+    const names = Array.isArray(storeNames) ? storeNames : [storeNames];
+    if (names.some((n) => LOCKED_STORES.includes(n))) {
+      return Promise.reject(new Error("Licencia expirada: la app está en modo consulta"));
+    }
+  }
   return openDB().then(
     (db) =>
       new Promise((resolve, reject) => {

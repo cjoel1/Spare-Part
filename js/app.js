@@ -3,6 +3,9 @@ import { route, notFound, startRouter } from "./router.js";
 import { initNav, setActiveNav, setCompanyName, refreshReorderBadge } from "./components/nav.js";
 import { icon } from "./utils/icons.js";
 import { showToast } from "./components/toast.js";
+import { getLicenseStatus } from "./license.js";
+import { showActivationGate } from "./components/activation.js";
+import { setWritesLocked } from "./db.js";
 
 const viewRoot = document.getElementById("view-root");
 
@@ -84,7 +87,32 @@ async function boot() {
     setCompanyName(state.companyName);
     updateThemeButton();
   });
-  startRouter();
+
+  // License gate: the router (and therefore the whole app) only starts once
+  // there is a valid activation, or the user opts into read-only mode.
+  const license = await getLicenseStatus();
+  state.license = license.payload || null;
+  if (license.state === "active") {
+    if (license.daysLeft !== null && license.daysLeft <= 30) {
+      showToast(`Tu licencia vence en ${license.daysLeft} día${license.daysLeft === 1 ? "" : "s"}`, { type: "error", duration: 6000 });
+    }
+    startRouter();
+  } else if (license.state === "expired") {
+    showActivationGate({
+      status: license,
+      onActivated: () => location.reload(),
+      onReadOnly: () => {
+        setWritesLocked(true);
+        const banner = document.createElement("div");
+        banner.className = "readonly-banner";
+        banner.textContent = "Modo consulta — la licencia expiró; la edición está bloqueada";
+        document.querySelector(".topbar").after(banner);
+        startRouter();
+      },
+    });
+  } else {
+    showActivationGate({ status: license, onActivated: () => location.reload() });
+  }
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker

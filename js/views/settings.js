@@ -5,6 +5,8 @@ import { escapeHtml } from "../utils/helpers.js";
 import { showToast } from "../components/toast.js";
 import { confirmModal } from "../components/modal.js";
 import { setCompanyName as setTopbarCompanyName } from "../components/nav.js";
+import { getLicenseStatus } from "../license.js";
+import { showActivationGate } from "../components/activation.js";
 
 async function renameEquipmentEverywhere(oldName, newName) {
   const parts = await db.getAllParts();
@@ -61,6 +63,16 @@ function editableList(items, { addLabel }) {
 }
 
 export async function render(root) {
+  const license = await getLicenseStatus();
+  const licenseLine =
+    license.state === "active" || license.state === "expired"
+      ? `Licenciado a: <strong>${escapeHtml(license.payload.c || "")}</strong>${license.payload.p ? " · " + escapeHtml(license.payload.p) : ""} — ${
+          license.payload.exp
+            ? (license.state === "expired" ? `<span style="color:var(--danger);">venció el ${escapeHtml(license.payload.exp)}</span>` : `vence el ${escapeHtml(license.payload.exp)}`)
+            : "licencia perpetua"
+        }`
+      : "Sin licencia activa";
+
   root.innerHTML = `
     <div class="section-title" style="margin-top:0;">General</div>
     <div class="card card-pad mb-16">
@@ -93,6 +105,17 @@ export async function render(root) {
     <div class="section-title">Categorías</div>
     <div class="card card-pad mb-16" id="category-card">
       ${editableList(state.categories, { addLabel: "Agregar categoría" })}
+    </div>
+
+    <div class="section-title">Licencia</div>
+    <div class="card card-pad mb-16">
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Estado de la licencia</div>
+          <div class="settings-row-sub">${licenseLine}</div>
+        </div>
+        <button class="btn btn-sm" id="btn-change-license">Cambiar código</button>
+      </div>
     </div>
 
     <div class="section-title">Datos</div>
@@ -158,6 +181,14 @@ export async function render(root) {
   wireListCard(root.querySelector("#equipment-card"));
   wireListCard(root.querySelector("#category-card"));
 
+  root.querySelector("#btn-change-license").addEventListener("click", () => {
+    showActivationGate({
+      status: license,
+      allowClose: true,
+      onActivated: () => location.reload(),
+    });
+  });
+
   root.querySelector("#btn-reset").addEventListener("click", async () => {
     const ok = await confirmModal({
       title: "Restablecer datos",
@@ -172,6 +203,7 @@ export async function render(root) {
   });
 
   root.querySelector("#btn-save-general").addEventListener("click", async () => {
+    try {
     const companyName = root.querySelector("#company-name").value.trim() || "Spare Part Inventory";
     if (companyName !== state.companyName) {
       await setCompanyName(companyName);
@@ -215,5 +247,8 @@ export async function render(root) {
 
     showToast("Ajustes guardados", { type: "success" });
     render(root);
+    } catch (err) {
+      showToast(err.message, { type: "error" });
+    }
   });
 }
